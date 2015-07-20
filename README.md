@@ -1,7 +1,7 @@
 HentaiJS Notes Project
 ================================================
 
-It is a team project for training frontend stills.
+It is a team project for training frontend skills.
 
 Read [ife task description](https://github.com/baidu-ife/ife/blob/master/2015_summer/task/ria_qihang_01.md) to learn more about this project.
 
