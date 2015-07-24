@@ -6,7 +6,8 @@ extend(HT, {
   isObject,
   isFunction,
   extend,
-  merge
+  merge,
+  forEach
 });
 
 HT.app = new App;

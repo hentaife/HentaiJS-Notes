@@ -5,32 +5,43 @@ class App extends Container {
     
     this.initialized = false;
     this.providers = {};
+    this.controllers = {};
   }
   
-  provider(name, provider) {
-    if(isUndefined(provider)) {
+  provider(name, fn) {
+    var provider;
+
+    if(isUndefined(fn)) {
       return this.providers[name];
     }
     
-    this.providers[name] = new provider;
+    provider = new fn;
+    provider.app = this;
+    this.providers[name] = provider;
     
     if(this.initialized) {
-      this.providers[name].run();
+      provider.register();
     }
   }
   
-  controller() {
+  controller(name, fn) {
+    var controller;
     
+    if(isUndefined(fn)) {
+      return this.providers[name];
+    }
+    
+    controller = new Controller(this.invoke(fn));
+    this.controllers[name] = controller;
   }
   
   run(element) {
-    
     forEach(this.providers, function(provider) {
-      provider.run(this);
-    }, this);
+      provider.register();
+    });
     
     this.invoke(function(compile) {
-      
+
       compile(element);
       
     }); 

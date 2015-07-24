@@ -10,10 +10,11 @@ gulp.task('build', function() {
     'src/ht/helpers.js',
     'src/ht/container.js',
     'src/ht/app.js',
-    'src/ht/provider.js',
     'src/ht/core.js',
     'src/ht/compile.js',
+    'src/ht/controller.js',
     'src/ht/router.js',
+    'src/ht/bootstrap.js',
   ])
     .pipe($.sourcemaps.init())
       .pipe($.concat('ht.js'))
@@ -22,4 +23,6 @@ gulp.task('build', function() {
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', ['build']);
+gulp.task('default', ['build'], function() {
+  gulp.watch(['src/**/*'], ['build']);
+});
