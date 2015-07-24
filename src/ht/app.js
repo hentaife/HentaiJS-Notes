@@ -28,7 +28,7 @@ class App extends Container {
     var controller;
     
     if(isUndefined(fn)) {
-      return this.providers[name];
+      return this.controllers[name];
     }
     
     controller = new Controller(this.invoke(fn));

@@ -21,17 +21,17 @@ class Compiler {
   }
   
   run() {
-    this.compileNotes(this.element);
+    this.compileNodes(this.element);
   }
   
-  compileNotes(nodeList) {
+  compileNodes(nodeList) {
     for (let i = 0; i < nodeList.length; i++) {
       
       let node = nodeList[i];
       let childNodes = node.childNodes;
       
       if(childNodes) {
-        this.compileNotes(childNodes);
+        this.compileNodes(childNodes);
       }
     }
   }

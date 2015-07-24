@@ -240,7 +240,7 @@ var App = (function (_Container) {
       var controller;
 
       if (isUndefined(fn)) {
-        return this.providers[name];
+        return this.controllers[name];
       }
 
       controller = new Controller(this.invoke(fn));
@@ -313,18 +313,18 @@ var Compiler = (function () {
   _createClass(Compiler, [{
     key: 'run',
     value: function run() {
-      this.compileNotes(this.element);
+      this.compileNodes(this.element);
     }
   }, {
-    key: 'compileNotes',
-    value: function compileNotes(nodeList) {
+    key: 'compileNodes',
+    value: function compileNodes(nodeList) {
       for (var i = 0; i < nodeList.length; i++) {
 
         var node = nodeList[i];
         var childNodes = node.childNodes;
 
         if (childNodes) {
-          this.compileNotes(childNodes);
+          this.compileNodes(childNodes);
         }
       }
     }
