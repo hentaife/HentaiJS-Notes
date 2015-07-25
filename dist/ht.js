@@ -4,12 +4,13 @@ var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_ag
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var isArray = Array.isArray;
 var slice = [].slice;
+var shift = [].shift;
 var getPrototypeOf = Object.getPrototypeOf;
 var lowercase = function lowercase(string) {
   return isString(string) ? string.toLowerCase() : string;
@@ -147,6 +148,10 @@ function camelCase(name) {
     return offset ? letter.toUpperCase() : letter;
   });
 }
+
+function trim(value) {
+  return isString(value) ? value.trim() : value;
+}
 var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
 var FN_ARG_SPLIT = /,/;
 var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
@@ -246,35 +251,46 @@ var App = (function (_Container) {
   }, {
     key: 'controller',
     value: function controller(name, fn) {
-      var controller;
-
-      if (isUndefined(fn)) {
-        return this.controllers[name];
-      }
-
-      controller = new Controller(this.invoke(fn));
-      this.controllers[name] = controller;
+      this.controllers[name] = fn;
     }
   }, {
     key: 'directive',
     value: function directive(name, fn) {
-      this.directives[name] = new Directive(this.invoke(fn));
+      this.directives[name] = fn;
     }
   }, {
     key: 'coreDirective',
-    value: function coreDirective(name) {
-      this.directive(HT.prefix + name, fn);
+    value: function coreDirective(name, fn) {
+      this.directive(camelCase(HT.prefix + '-' + name), fn);
+    }
+  }, {
+    key: 'createController',
+    value: function createController(name) {
+      if (!this.controllers[name]) {
+        return;
+      }
+
+      return new Controller(this.invoke(this.controllers[name]));
+    }
+  }, {
+    key: 'createDirective',
+    value: function createDirective(name, controller, element, attrs) {
+      if (!this.directives[name]) {
+        return;
+      }
+
+      return new Directive(this.invoke(this.directives[name]), controller, element, attrs);
     }
   }, {
     key: 'run',
-    value: function run(element) {
+    value: function run($element) {
       forEach(this.providers, function (provider) {
         provider.register();
       });
 
       this.invoke(function (compile) {
 
-        compile(element);
+        compile($element);
       });
 
       this.initialized = true;
@@ -289,11 +305,19 @@ var HT;
 HT = window.HT || (window.HT = {});
 
 extend(HT, {
+
+  //expose helpers
   isObject: isObject,
   isFunction: isFunction,
   extend: extend,
   merge: merge,
-  forEach: forEach
+  forEach: forEach,
+
+  prefix: 'ht',
+
+  error: function error(message) {
+    console.log(message);
+  }
 });
 
 HT.app = new App();
@@ -310,9 +334,9 @@ var CompileProvider = (function () {
     key: 'register',
     value: function register() {
 
-      this.app.value('compile', function (element) {
+      this.app.value('compile', function ($element) {
 
-        return new Compiler(element);
+        return new Compiler($element);
       });
     }
   }]);
@@ -321,10 +345,11 @@ var CompileProvider = (function () {
 })();
 
 var Compiler = (function () {
-  function Compiler(element) {
+  function Compiler($element) {
     _classCallCheck(this, Compiler);
 
-    this.element = element;
+    this.$element = $element;
+    this.controller = new Controller({});
 
     this.run();
   }
@@ -332,23 +357,7 @@ var Compiler = (function () {
   _createClass(Compiler, [{
     key: 'run',
     value: function run() {
-      this.compileNodes(this.element);
-    }
-  }, {
-    key: 'compileNodes',
-    value: function compileNodes(nodeList) {
-      for (var i = 0; i < nodeList.length; i++) {
-
-        var node = nodeList[i];
-
-        var directives = Directive.collect(node);
-
-        var childNodes = node.childNodes;
-
-        if (childNodes) {
-          this.compileNodes(childNodes);
-        }
-      }
+      this.controller.compile(this.$element);
     }
   }]);
 
@@ -357,54 +366,180 @@ var Compiler = (function () {
 
 HT.app.provider('compile', CompileProvider);
 
-var Controller = function Controller(data) {
-  _classCallCheck(this, Controller);
+var Controller = (function () {
+  function Controller(data) {
+    _classCallCheck(this, Controller);
 
-  this.model = {};
+    var self = this;
 
-  forEach(data, function (value, key) {
-    defineProperty(this.model, key, {
-      set: function set(value) {}
-    });
-  }, this);
-};
+    this.model = {
+      '$attributes': data
+    };
+
+    forEach(data, function (value, key) {
+      defineProperty(this.model, key, {
+        set: function set(value) {
+          this['$attributes'][key] = value;
+        },
+
+        get: function get() {
+          return this['$attributes'][key];
+        }
+      });
+    }, this);
+  }
+
+  _createClass(Controller, [{
+    key: 'compile',
+    value: function compile(nodeList) {
+      for (var i = 0; i < nodeList.length; i++) {
+
+        var node = nodeList[i];
+        var directives = Directive.collect(node);
+        var context = this.createContext(directives, this);
+
+        context.applyDirectives(node, directives);
+
+        var childNodes = node.childNodes;
+        if (childNodes) {
+          context.compile(childNodes);
+        }
+      }
+    }
+  }, {
+    key: 'createContext',
+    value: function createContext(directives, parent) {
+      var controller = this;
+
+      forEach(directives, function (value, name) {
+        if (HT.prefix + 'Controller' === name) {
+          controller = HT.app.createController(value, parent);
+        }
+      });
+
+      return controller;
+    }
+  }, {
+    key: 'applyDirectives',
+    value: function applyDirectives(node, directives) {
+
+      forEach(directives, function (value, name) {
+
+        HT.app.createDirective(name, this, node, directives);
+      }, this);
+    }
+  }, {
+    key: 'fire',
+    value: function fire(expr) {
+      var params = arguments;
+      shift.apply(params);
+
+      new Function('return this.' + expr).apply(this.model, params);
+    }
+  }]);
+
+  return Controller;
+})();
 
 var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
 
 var Directive = (function () {
-  function Directive() {
+  function Directive(handler, controller, element, attrs) {
     _classCallCheck(this, Directive);
+
+    handler.link(controller, HT.$(element), attrs);
   }
 
   _createClass(Directive, null, [{
     key: 'normalize',
-    value: function normalize() {
+    value: function normalize(name) {
       return camelCase(name.replace(PREFIX_REGEXP, ''));
     }
   }, {
     key: 'collect',
     value: function collect(node) {
-      var nodeType;
+      var nodeType, directives;
 
       nodeType = node.nodeType;
 
       if (nodeType === NODE_TYPE_ELEMENT) {
-        this.collectElement(node);
+        directives = this.collectElement(node);
       }
+
+      return directives;
     }
   }, {
     key: 'collectElement',
-    value: function collectElement(node) {}
+    value: function collectElement(node) {
+      var attrs, directives;
+
+      attrs = node.attributes;
+      directives = {};
+
+      for (var i = 0; i < attrs.length; i++) {
+        var attr = attrs[i];
+        var _name = attr.name;
+        var value = trim(attr.value);
+        var directiveName = this.normalize(_name);
+
+        directives[directiveName] = value;
+      }
+
+      return directives;
+    }
   }]);
 
   return Directive;
 })();
 
-HT.$(function () {
-  var element = HT.$('[ht-app]');
+var DirectiveHandler = (function () {
+  function DirectiveHandler() {
+    _classCallCheck(this, DirectiveHandler);
 
-  if (element.length) {
-    HT.app.run(element);
+    this.name = '';
+  }
+
+  _createClass(DirectiveHandler, [{
+    key: 'link',
+    value: function link(controller, element, attrs) {
+      var name;
+
+      name = this.name;
+
+      element.on(name, function ($event) {
+        controller.fire(attrs[camelCase(HT.prefix + '-' + name)], $event);
+      });
+    }
+  }]);
+
+  return DirectiveHandler;
+})();
+
+var ClickDirectiveHandler = (function (_DirectiveHandler) {
+  _inherits(ClickDirectiveHandler, _DirectiveHandler);
+
+  function ClickDirectiveHandler() {
+    _classCallCheck(this, ClickDirectiveHandler);
+
+    _get(Object.getPrototypeOf(ClickDirectiveHandler.prototype), 'constructor', this).call(this);
+
+    this.name = 'click';
+  }
+
+  return ClickDirectiveHandler;
+})(DirectiveHandler);
+
+HT.app.coreDirective('click', function () {
+  return new ClickDirectiveHandler();
+});
+
+HT.$(function () {
+  var $element = HT.$('[ht-app]');
+
+  if ($element.length > 1) {
+    HT.error('multipe bootstrap elements found');
+  } else if ($element.length) {
+    HT.app.run($element);
   }
 });
 //# sourceMappingURL=ht.js.map

@@ -26,32 +26,41 @@ class App extends Container {
   }
   
   controller(name, fn) {
-    var controller;
-    
-    if(isUndefined(fn)) {
-      return this.controllers[name];
-    }
-    
-    controller = new Controller(this.invoke(fn));
-    this.controllers[name] = controller;
+    this.controllers[name] = fn;
   }
   
   directive(name, fn) {
-    this.directives[name] = new Directive(this.invoke(fn));
+    this.directives[name] = fn;
   }
   
-  coreDirective(name) {
-    this.directive(HT.prefix + name, fn)
+  coreDirective(name, fn) {
+    this.directive(camelCase(HT.prefix + '-' + name), fn)
   }
   
-  run(element) {
+  createController(name) {
+    if(!this.controllers[name]) {
+      return;
+    }
+    
+    return new Controller(this.invoke(this.controllers[name]));
+  }
+  
+  createDirective(name, controller, element, attrs) {
+    if(!this.directives[name]) {
+      return;
+    }
+    
+    return new Directive(this.invoke(this.directives[name]), controller, element, attrs);
+  }
+  
+  run($element) {
     forEach(this.providers, function(provider) {
       provider.register();
     });
     
     this.invoke(function(compile) {
 
-      compile(element);
+      compile($element);
       
     }); 
     

@@ -1,6 +1,7 @@
 
 var isArray = Array.isArray;
 var slice = [].slice;
+var shift = [].shift;
 var getPrototypeOf = Object.getPrototypeOf;
 var lowercase = function(string) {return isString(string) ? string.toLowerCase() : string;};
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -137,4 +138,8 @@ function camelCase(name) {
     replace(SPECIAL_CHARS_REGEXP, function(_, separator, letter, offset) {
       return offset ? letter.toUpperCase() : letter;
     });
+}
+
+function trim(value) {
+  return isString(value) ? value.trim() : value;
 }

@@ -14,6 +14,10 @@ gulp.task('build', function() {
     'src/ht/compile.js',
     'src/ht/controller.js',
     'src/ht/directive.js',
+    
+    'src/ht/directives/event.js',
+    'src/ht/directives/click.js',
+    
     'src/ht/router.js',
     'src/ht/bootstrap.js',
   ])

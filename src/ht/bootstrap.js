@@ -1,7 +1,9 @@
 HT.$(function() {
-  var element = HT.$('[ht-app]');
+  var $element = HT.$('[ht-app]');
   
-  if(element.length) {
-    HT.app.run(element);
+  if($element.length > 1) {
+    HT.error('multipe bootstrap elements found');
+  } else if($element.length) {
+    HT.app.run($element);
   }
 });

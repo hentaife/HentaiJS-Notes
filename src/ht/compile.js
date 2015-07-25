@@ -2,9 +2,9 @@ class CompileProvider {
   
   register() {
     
-    this.app.value('compile', function(element) {
+    this.app.value('compile', function($element) {
  
-      return new Compiler(element);
+      return new Compiler($element);
       
     });
     
@@ -14,29 +14,15 @@ class CompileProvider {
 
 class Compiler {
   
-  constructor(element) {
-    this.element = element;
+  constructor($element) {
+    this.$element = $element;
+    this.controller = new Controller({});
     
     this.run();
   }
   
   run() {
-    this.compileNodes(this.element);
-  }
-  
-  compileNodes(nodeList) {
-    for (let i = 0; i < nodeList.length; i++) {
-      
-      let node = nodeList[i];
-      
-      let directives = Directive.collect(node);
-      
-      let childNodes = node.childNodes;
-      
-      if(childNodes) {
-        this.compileNodes(childNodes);
-      }
-    }
+    this.controller.compile(this.$element);
   }
   
 }

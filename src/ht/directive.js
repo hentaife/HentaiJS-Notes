@@ -2,22 +2,43 @@ var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
 
 class Directive {
   
-  static normalize() {
+  constructor(handler, controller, element, attrs) {
+    
+    handler.link(controller, HT.$(element), attrs);
+    
+  }
+  
+  static normalize(name) {
     return camelCase(name.replace(PREFIX_REGEXP, ''));
   }
   
   static collect(node) {
-    var nodeType;
+    var nodeType, directives;
     
     nodeType = node.nodeType;
     
     if(nodeType === NODE_TYPE_ELEMENT) {
-      this.collectElement(node);
+      directives = this.collectElement(node);
     }
 
+    return directives;
   }
   
   static collectElement(node) {
+    var attrs, directives;
     
+    attrs = node.attributes;
+    directives = {};
+    
+    for (let i = 0; i < attrs.length; i++) {
+      let attr = attrs[i];
+      let name = attr.name;
+      let value = trim(attr.value);
+      let directiveName = this.normalize(name);
+      
+      directives[directiveName] = value;
+    }
+    
+    return directives;
   }
 }

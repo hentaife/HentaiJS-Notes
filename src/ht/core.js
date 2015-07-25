@@ -3,11 +3,19 @@ var HT;
 HT = window.HT || (window.HT = {});
 
 extend(HT, {
+  
+  //expose helpers
   isObject,
   isFunction,
   extend,
   merge,
-  forEach
+  forEach,
+  
+  prefix: 'ht',
+  
+  error(message) {
+    console.log(message);
+  }
 });
 
 HT.app = new App;
