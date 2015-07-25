@@ -13,6 +13,7 @@ gulp.task('build', function() {
     'src/ht/core.js',
     'src/ht/compile.js',
     'src/ht/controller.js',
+    'src/ht/directive.js',
     'src/ht/router.js',
     'src/ht/bootstrap.js',
   ])

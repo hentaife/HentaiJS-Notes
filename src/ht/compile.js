@@ -28,6 +28,9 @@ class Compiler {
     for (let i = 0; i < nodeList.length; i++) {
       
       let node = nodeList[i];
+      
+      let directives = Directive.collect(node);
+      
       let childNodes = node.childNodes;
       
       if(childNodes) {

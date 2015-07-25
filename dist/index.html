@@ -7,7 +7,29 @@
   </head>
   <body>
     
+    <div ht-controller="AppCtrl">
+      
+      <div>{{ count }}</div>
+      
+      <button ht-click="click()">test</button>
+      
+    </div>
+    
     <script type="text/javascript" src="../bower_components/jquery/dist/jquery.js"></script>
     <script type="text/javascript" src="ht.js"></script>
+    <script type="text/javascript">
+      
+      HT.app.controller('AppCtrl', function() {
+        
+        return {
+          count: 0,
+          click: function() {
+            this.count++;
+          }
+        };
+        
+      });
+      
+    </script>
   </body>
 </html>

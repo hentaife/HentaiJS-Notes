@@ -24,6 +24,8 @@ var NODE_TYPE_COMMENT = 8;
 var NODE_TYPE_DOCUMENT = 9;
 var NODE_TYPE_DOCUMENT_FRAGMENT = 11;
 
+var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
+
 function isObject(value) {
   return value !== null && typeof value === 'object';
 }
@@ -139,6 +141,12 @@ function extend(dst) {
 function merge(dst) {
   return baseExtend(dst, slice.call(arguments, 1), true);
 }
+
+function camelCase(name) {
+  return name.replace(SPECIAL_CHARS_REGEXP, function (_, separator, letter, offset) {
+    return offset ? letter.toUpperCase() : letter;
+  });
+}
 var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
 var FN_ARG_SPLIT = /,/;
 var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
@@ -215,6 +223,7 @@ var App = (function (_Container) {
     this.initialized = false;
     this.providers = {};
     this.controllers = {};
+    this.directives = {};
   }
 
   _createClass(App, [{
@@ -245,6 +254,16 @@ var App = (function (_Container) {
 
       controller = new Controller(this.invoke(fn));
       this.controllers[name] = controller;
+    }
+  }, {
+    key: 'directive',
+    value: function directive(name, fn) {
+      this.directives[name] = new Directive(this.invoke(fn));
+    }
+  }, {
+    key: 'coreDirective',
+    value: function coreDirective(name) {
+      this.directive(HT.prefix + name, fn);
     }
   }, {
     key: 'run',
@@ -321,6 +340,9 @@ var Compiler = (function () {
       for (var i = 0; i < nodeList.length; i++) {
 
         var node = nodeList[i];
+
+        var directives = Directive.collect(node);
+
         var childNodes = node.childNodes;
 
         if (childNodes) {
@@ -346,6 +368,37 @@ var Controller = function Controller(data) {
     });
   }, this);
 };
+
+var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
+
+var Directive = (function () {
+  function Directive() {
+    _classCallCheck(this, Directive);
+  }
+
+  _createClass(Directive, null, [{
+    key: 'normalize',
+    value: function normalize() {
+      return camelCase(name.replace(PREFIX_REGEXP, ''));
+    }
+  }, {
+    key: 'collect',
+    value: function collect(node) {
+      var nodeType;
+
+      nodeType = node.nodeType;
+
+      if (nodeType === NODE_TYPE_ELEMENT) {
+        this.collectElement(node);
+      }
+    }
+  }, {
+    key: 'collectElement',
+    value: function collectElement(node) {}
+  }]);
+
+  return Directive;
+})();
 
 HT.$(function () {
   var element = HT.$('[ht-app]');

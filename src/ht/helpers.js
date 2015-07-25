@@ -13,6 +13,8 @@ var NODE_TYPE_COMMENT = 8;
 var NODE_TYPE_DOCUMENT = 9;
 var NODE_TYPE_DOCUMENT_FRAGMENT = 11;
 
+var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
+
 function isObject(value) {
   return value !== null && typeof value === 'object';
 }
@@ -128,4 +130,11 @@ function extend(dst) {
 
 function merge(dst) {
   return baseExtend(dst, slice.call(arguments, 1), true);
+}
+
+function camelCase(name) {
+  return name.
+    replace(SPECIAL_CHARS_REGEXP, function(_, separator, letter, offset) {
+      return offset ? letter.toUpperCase() : letter;
+    });
 }

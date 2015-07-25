@@ -6,6 +6,7 @@ class App extends Container {
     this.initialized = false;
     this.providers = {};
     this.controllers = {};
+    this.directives = {};
   }
   
   provider(name, fn) {
@@ -33,6 +34,14 @@ class App extends Container {
     
     controller = new Controller(this.invoke(fn));
     this.controllers[name] = controller;
+  }
+  
+  directive(name, fn) {
+    this.directives[name] = new Directive(this.invoke(fn));
+  }
+  
+  coreDirective(name) {
+    this.directive(HT.prefix + name, fn)
   }
   
   run(element) {
