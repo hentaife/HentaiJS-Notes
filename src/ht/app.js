@@ -1,4 +1,6 @@
-class App extends Container {
+import {Container} from './container';
+
+export class App extends Container {
   
   constructor() {
     super();

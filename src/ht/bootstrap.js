@@ -1,3 +1,5 @@
+import {App} from './app';
+
 HT.$(function() {
   var $element = HT.$('[ht-app]');
   

@@ -1,33 +1,38 @@
-var gulp, $;
+var gulp = require('gulp');
+var webpack = require('webpack');
+var path = require('path');
 
-gulp = require('gulp');
-$ = require('gulp-load-plugins')();
+gulp.task('default', ['framework']);
 
-console.log($.sourcemaps.init);
-
-gulp.task('build', function() {
-  return gulp.src([
-    'src/ht/helpers.js',
-    'src/ht/container.js',
-    'src/ht/app.js',
-    'src/ht/core.js',
-    'src/ht/compile.js',
-    'src/ht/controller.js',
-    'src/ht/directive.js',
+gulp.task('framework', function() {
+  
+  var compiler = webpack({
     
-    'src/ht/directives/event.js',
-    'src/ht/directives/click.js',
+    context: path.join(__dirname, 'src', 'ht'),
+    entry: './bootstrap',
     
-    'src/ht/router.js',
-    'src/ht/bootstrap.js',
-  ])
-    .pipe($.sourcemaps.init())
-      .pipe($.concat('ht.js'))
-      .pipe($.babel())
-     .pipe($.sourcemaps.write('.'))
-    .pipe(gulp.dest('dist'));
-});
-
-gulp.task('default', ['build'], function() {
-  gulp.watch(['src/**/*'], ['build']);
+    module: {
+      loaders: [
+        {
+          test: /\.js$/,
+          loader: 'babel'
+        }
+      ]
+    },
+    
+    output: {
+      path: path.join(__dirname, 'dist'),
+      filename: "ht.js"
+    }
+    
+  });
+  
+  compiler.watch({
+    
+    aggregateTimeout: 300,
+    poll: true
+    
+  }, function() {
+  });
+  
 });
