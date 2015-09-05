@@ -33,6 +33,7 @@ gulp.task('framework', function() {
     poll: true
     
   }, function() {
+    console.log('files re-compiled...')
   });
   
 });

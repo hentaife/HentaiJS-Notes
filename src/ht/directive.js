@@ -1,6 +1,4 @@
-var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
-
-class Directive {
+export default class Directive {
   
   constructor(handler, controller, element, attrs) {
     

@@ -1,4 +1,4 @@
-class DirectiveHandler {
+class EventDirective {
   
   constructor() {
     

@@ -1,4 +1,4 @@
-class ClickDirectiveHandler extends DirectiveHandler {
+class ClickDirective extends EventDirective {
   
   constructor() {
     super();

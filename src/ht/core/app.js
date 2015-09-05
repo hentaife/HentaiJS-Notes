@@ -1,6 +1,11 @@
-import {Container} from './container';
+import Container from './container';
 
-export class App extends Container {
+var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
+var FN_ARG_SPLIT = /,/;
+var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
+var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+
+export default class App extends Container {
   
   constructor() {
     super();
